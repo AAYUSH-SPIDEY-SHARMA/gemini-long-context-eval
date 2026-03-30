@@ -24,7 +24,7 @@
       "repository_metadata": {
         "repo_url": "https://github.com/facebook/react",
         "base_commit": "378973b387b6a6f287e451dd0356099180684c3c^",
-        "language": "auto-detected",
+        "language": "JavaScript",
         "commit_date": "2025-12-05T03:59:21+01:00"
       },
       "task_description": {
@@ -183,7 +183,7 @@
       "repository_metadata": {
         "repo_url": "https://github.com/facebook/react",
         "base_commit": "5e4279134dbc29116407a5ec515e74e2c0ae5018^",
-        "language": "auto-detected",
+        "language": "JavaScript",
         "commit_date": "2026-03-04T13:52:11+01:00"
       },
       "task_description": {
@@ -347,7 +347,7 @@
       "repository_metadata": {
         "repo_url": "https://github.com/facebook/react",
         "base_commit": "6a04c369f1b182c6b1d8153f173653c8d59a5965^",
-        "language": "auto-detected",
+        "language": "JavaScript",
         "commit_date": "2026-03-19T17:58:29-04:00"
       },
       "task_description": {
