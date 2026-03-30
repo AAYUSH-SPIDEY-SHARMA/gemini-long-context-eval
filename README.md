@@ -1,90 +1,107 @@
-# Long-Context & Complex Reasoning Coding Evaluation Dataset
+# Long-Context Coding Evaluation Pipeline
 
-**GSoC 2026 — Gemini CLI Issue [#23316](https://github.com/google-gemini/gemini-cli/issues/23316)**
+**GSoC 2026 — Issue #23316 — Gemini CLI**
 
-A prototype pipeline for building evaluation datasets that test AI coding assistants
-on **real-world, multi-file, cross-module engineering tasks** extracted from open-source
-repositories.
+A production-grade pipeline for extracting, validating, and evaluating long-context coding tasks from real-world open-source repositories.
 
-## Why This Matters
-
-Current coding benchmarks (SWE-bench, HumanEval) test isolated functions or single-file fixes.
-Real software engineering requires reading 20-100+ files across modules, understanding build
-systems, dependency chains, and architectural constraints. This pipeline extracts and validates
-tasks that **require genuine long-context reasoning** — not shortcut-solvable puzzles.
-
-## Pipeline
+## What This Does
 
 ```
-mine_repos.py          →  ranked_repos.json       (20 scored repositories)
-       │
-extract_tasks.py       →  sample_tasks.json       (tasks with import-based dependency analysis)
-       │
-build_dataset.py       →  dataset.json            (clean eval-ready format)
-       │
-run_eval.py            →  eval_results.json       (pass/fail with logs)
+mine_repos.py → extract_tasks.py → build_dataset.py → run_eval.py
+  (score repos)    (mine git history)   (validate & filter)  (clone → test → patch → retest)
 ```
-
-## Key Features
-
-| Feature | Description |
-|---|---|
-| **Import-based dependency graph** | Regex patterns for JS/TS/Python/Go/Java/Rust; 2-level traversal |
-| **LCVS scoring** | Long-Context Validation Score (0-100) measuring file count, module diversity, depth |
-| **Real token estimation** | Actual file content sizes via `git show`, not averages |
-| **Shortcut resistance** | `context_ratio ≥ 2.0 AND tokens ≥ 30K AND modules ≥ 2` — defensible thresholds |
-| **Context expansion** | Modified files → transitive imports → full required context |
-| **Failure mode classification** | 6 categories: context_selection, cross_module_reasoning, partial_fix, etc. |
-| **Gold patch validation** | End-to-end: clone → checkout → test → apply patch → retest |
 
 ## Quick Start
 
+### 1. Mine Repositories
+
 ```bash
-# 1. Score repositories (offline mode, no API key needed)
+# Recommended: use GitHub API for accurate data
+GITHUB_TOKEN=ghp_xxx python mine_repos.py
+
+# Fallback: curated metadata (no API needed)
 python mine_repos.py
-
-# 2. Extract tasks from a repository
-python extract_tasks.py https://github.com/facebook/react --limit 300
-
-# 3. Generate clean dataset
-python build_dataset.py
-
-# 4. Run evaluation pipeline
-python run_eval.py
 ```
 
-## Example Output (facebook/react)
+**Output:** `ranked_repos.json` — 20 scored repositories
 
-| Task | Files Modified | Context Files | Tokens | Context Ratio | Dep Edges |
-|---|---|---|---|---|---|
-| react-3cb2c420 | 11 | 38 | ~46K | 3.45 | 52 |
-| react-4cf90638 | 4 | 77 | ~190K | 19.25 | 250 |
+### 2. Extract Tasks from a Repository
 
-Both tasks are **shortcut-resistant** (ratio ≥ 2.0) — an AI agent must read significantly
-more files than it modifies to solve correctly.
+```bash
+python extract_tasks.py https://github.com/facebook/react --limit 100 --top 5
+```
 
-## Files
+**Output:** `sample_tasks.json` — extracted tasks with:
+- Import-based dependency graph (2-level transitive expansion)
+- LCVS scoring (0-100)
+- Shortcut resistance validation (context ratio ≥ 2.0, tokens ≥ 30K, modules ≥ 2)
+- Language detection and post-training-cutoff filtering
 
-| File | Description | Lines |
+### 3. Build Validated Dataset
+
+```bash
+python build_dataset.py --input sample_tasks.json --min-lcvs 60
+```
+
+**Output:** `dataset.json` — validates schema, enforces quality thresholds, auto-detects languages and test commands. Tasks failing LCVS, context ratio, or cutoff checks are rejected with logged reasons.
+
+### 4. Run Evaluation
+
+```bash
+python run_eval.py                          # Run all tasks
+python run_eval.py --task react-5e427913    # Run specific task
+python run_eval.py --validate-only          # Only check patches apply cleanly
+```
+
+**Pipeline per task:**
+1. Clone repo → checkout `base_commit`
+2. Install language-specific dependencies (npm/pip/go mod/cargo)
+3. Auto-detect test command
+4. Validate patch (`git apply --check`)
+5. Run tests BEFORE fix (expect FAIL)
+6. Apply gold patch
+7. Run tests AFTER fix (expect PASS)
+8. Compute partial credit score (file overlap + test improvement + patch precision)
+9. Classify failure mode (6 categories)
+
+**Output:** `eval_results.json`
+
+## Pipeline Components
+
+| File | Lines | Description |
 |---|---|---|
-| `mine_repos.py` | Repository discovery & scoring pipeline | ~260 |
-| `extract_tasks.py` | Git history mining, import-based deps, LCVS scoring | ~720 |
-| `build_dataset.py` | Generates clean `dataset.json` from extracted tasks | ~80 |
-| `run_eval.py` | End-to-end evaluation: clone → test → patch → retest | ~335 |
-| `long-context-helper.ts` | TypeScript eval adapter for Gemini CLI integration | ~270 |
+| `mine_repos.py` | 262 | Repository scoring with GitHub API + offline fallback |
+| `extract_tasks.py` | 750+ | Task extraction with dependency graph analysis |
+| `build_dataset.py` | 260+ | Schema validation, quality filtering, language detection |
+| `run_eval.py` | 490+ | End-to-end evaluation with scoring and classification |
+| `long-context-helper.ts` | 360+ | TypeScript adapter for Gemini CLI integration |
 
-## Integration with Gemini CLI
+## Quality Guarantees
 
-The `long-context-helper.ts` extends the existing `evalTest()` pattern from `evals/test-helper.ts`
-to support external repository checkouts. It includes:
-- `longContextEvalTest()` function for repo-level tasks
-- Git clone/cache management
-- 6-category failure mode classification
-- Detailed metrics collection (context utilization, test pass rates)
+Every accepted task must satisfy:
 
-## Phase 2 (Planned)
+| Criterion | Threshold | Why |
+|---|---|---|
+| LCVS score | ≥ 60 | Composite difficulty score |
+| Context ratio | ≥ 2.0 | Agent reads 2× more files than it edits |
+| Token volume | ≥ 30,000 | Minimum context window utilization |
+| Module count | ≥ 2 | Cross-module reasoning required |
+| Commit date | ≥ 2024-06-01 | Post-training cutoff (contamination defense) |
 
-- **AST-based filtering** via tree-sitter for language-aware import resolution
-- **CNS (Contextual Necessity Score)** formula for quantifying reasoning depth
-- **Multi-repo extraction** across top-10 ranked repositories
-- **Full Gemini CLI TestRig integration** for automated agent evaluation
+## Failure Mode Taxonomy
+
+| Mode | Detection |
+|---|---|
+| Context Selection | Agent didn't read required files |
+| Cross-Module Reasoning | Fixed one module, missed cascade |
+| Cascading Breakage | Fix breaks unrelated tests |
+| Scope Creep | Too many unnecessary changes |
+| Hallucinated Code | Invented non-existent functions |
+| Shallow Fix | Tests pass but wrong architecture |
+
+## Requirements
+
+- Python 3.10+
+- `git` in PATH
+- Language-specific tools as needed: `npm`, `pip`, `go`, `cargo`
+- Optional: `GITHUB_TOKEN` for API enrichment

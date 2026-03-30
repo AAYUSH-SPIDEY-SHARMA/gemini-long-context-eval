@@ -261,30 +261,76 @@ export async function longContextEvalTest(
       };
     }
 
-    // Step 2: The agent would be invoked here with the task description
-    // In production, this would call the Gemini CLI agent
-    // For now, we validate the gold patch as a reference implementation
-    console.log("  📋 Task description sent to agent...");
+    // Step 2: Apply gold patch as reference implementation
+    // In production, this would invoke the Gemini CLI agent instead
+    console.log("  📋 Task description:");
     console.log(`     "${task.task_description.issue_text}"`);
 
-    // Step 3: Compare agent output to gold patch
     const expectedFiles = task.context_requirements.modified_files;
+    let agentFiles: string[] = [];
 
-    // TODO: In production, capture actual agent files
-    const agentFiles: string[] = [];
-    const overlap = agentFiles.filter((f) =>
-      expectedFiles.includes(f),
-    );
-    const overlapRatio = expectedFiles.length > 0
-      ? overlap.length / expectedFiles.length
-      : 0;
+    // Step 3: Apply gold patch and capture modified files
+    if (task.evaluation_parameters.gold_patch) {
+      console.log("  🔧 Applying gold patch...");
+      const patchFile = path.join(repoDir, ".eval_patch.diff");
+      fs.writeFileSync(patchFile, task.evaluation_parameters.gold_patch);
+
+      try {
+        // Validate patch first (dry-run)
+        execSync(`git apply --check ${patchFile}`, {
+          cwd: repoDir,
+          stdio: "pipe",
+        });
+
+        // Apply patch
+        execSync(`git apply --verbose ${patchFile}`, {
+          cwd: repoDir,
+          stdio: "pipe",
+        });
+
+        // Capture actually modified files
+        const diffOutput = execSync("git diff --name-only", {
+          cwd: repoDir,
+          encoding: "utf-8",
+        });
+        agentFiles = diffOutput
+          .trim()
+          .split("\n")
+          .filter((f) => f.length > 0);
+        console.log(`  ✅ Patch applied: ${agentFiles.length} files modified`);
+      } catch (patchError) {
+        console.log(`  ❌ Patch failed: ${String(patchError).slice(0, 200)}`);
+      } finally {
+        if (fs.existsSync(patchFile)) fs.unlinkSync(patchFile);
+      }
+    }
+
+    const overlap = agentFiles.filter((f) => expectedFiles.includes(f));
+    const overlapRatio =
+      expectedFiles.length > 0 ? overlap.length / expectedFiles.length : 0;
 
     // Step 4: Run tests if available
     let testPassRate = 0;
     if (validateTests && task.context_requirements.test_files.length > 0) {
       console.log("  🧪 Running test validation...");
-      // TODO: Run actual test commands
-      testPassRate = 0; // Placeholder
+      try {
+        // Auto-detect test command based on repo structure
+        let testCmd = "npm test";
+        if (fs.existsSync(path.join(repoDir, "go.mod"))) testCmd = "go test ./...";
+        else if (fs.existsSync(path.join(repoDir, "Cargo.toml"))) testCmd = "cargo test";
+        else if (fs.existsSync(path.join(repoDir, "pytest.ini"))) testCmd = "python -m pytest -q";
+
+        execSync(testCmd, {
+          cwd: repoDir,
+          stdio: "pipe",
+          timeout: timeout,
+        });
+        testPassRate = 1.0;
+        console.log("  ✅ Tests pass");
+      } catch {
+        testPassRate = 0;
+        console.log("  ❌ Tests fail");
+      }
     }
 
     const passed = overlapRatio >= 0.8 && testPassRate >= 0.8;

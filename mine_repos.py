@@ -3,12 +3,12 @@
 Repository Mining Pipeline for Long-Context Evaluation Dataset
 GSoC 2026 — Issue #23316
 
-Scores and ranks curated repositories for long-context coding evaluation.
-Uses GitHub API for enrichment, falls back to metadata for offline scoring.
+Scores and ranks repositories for long-context coding evaluation.
+Uses GitHub API for live data enrichment; falls back to curated metadata.
 
 Usage:
-    python mine_repos.py                          # Offline mode (no API needed)
-    GITHUB_TOKEN=ghp_xxx python mine_repos.py     # Enriched mode (API data)
+    GITHUB_TOKEN=ghp_xxx python mine_repos.py     # Recommended: live API data
+    python mine_repos.py                          # Fallback: curated metadata
 """
 
 import json
@@ -139,10 +139,10 @@ def main():
 
     use_api = bool(TOKEN)
     if use_api:
-        print("✅ GitHub token detected — enriching with live API data")
+        print("✅ GitHub token detected — enriching with live API data (recommended)")
     else:
-        print("📦 Offline mode — using curated metadata")
-        print("   (Set GITHUB_TOKEN for live enrichment)")
+        print("📦 Offline mode — using curated metadata (set GITHUB_TOKEN for accurate scoring)")
+        print("   ⚠️  Star counts unavailable without API — using fork-based community scoring")
     print()
 
     results = []
@@ -151,8 +151,8 @@ def main():
         owner, name = repo_name.split("/")
         print(f"📦 {repo_name} ({primary_lang})")
 
-        # Start with curated defaults
-        stars = est_forks * 3  # rough estimate
+        # Start with curated defaults (no synthetic data — use real estimates)
+        stars = 0  # Unknown without API
         forks = est_forks
         size_kb = est_loc * 10  # rough
         languages = {primary_lang: est_loc * 100}

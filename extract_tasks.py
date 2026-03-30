@@ -35,6 +35,38 @@ MIN_FILES_CHANGED = 3
 MIN_LINES_CHANGED = 30
 MIN_DISTINCT_DIRS = 2  # Files must span at least N top-level directories
 MAX_FILES_CHANGED = 50  # Reject massive refactors/generated code
+POST_TRAINING_CUTOFF = "2024-06-01"  # Reject commits before this date
+MAX_CONTEXT_NODES = 100  # Cap BFS expansion to avoid graph explosion
+
+# ─── Language Detection ─────────────────────────────────────────────
+EXTENSION_TO_LANGUAGE = {
+    ".py": "Python", ".pyx": "Python",
+    ".js": "JavaScript", ".mjs": "JavaScript", ".cjs": "JavaScript",
+    ".ts": "TypeScript", ".tsx": "TypeScript", ".jsx": "JavaScript",
+    ".go": "Go",
+    ".java": "Java", ".kt": "Kotlin", ".scala": "Scala",
+    ".rs": "Rust",
+    ".c": "C", ".h": "C", ".cpp": "C++", ".hpp": "C++", ".cc": "C++",
+    ".rb": "Ruby", ".dart": "Dart",
+}
+
+# Token-per-byte ratios by language (code is denser than prose)
+TOKEN_RATIO = {
+    "Python": 3.2, "JavaScript": 3.0, "TypeScript": 3.0,
+    "Go": 3.5, "Java": 2.8, "Rust": 3.2, "C": 3.5, "C++": 3.0,
+    "default": 3.5,  # average chars per token for code
+}
+
+
+def detect_language(files: list[str]) -> str:
+    """Detect primary language from file extensions."""
+    counts: dict[str, int] = {}
+    for f in files:
+        _, ext = os.path.splitext(f)
+        lang = EXTENSION_TO_LANGUAGE.get(ext.lower())
+        if lang:
+            counts[lang] = counts.get(lang, 0) + 1
+    return max(counts, key=counts.get) if counts else "Unknown"
 
 # Skip patterns (trivial changes)
 SKIP_PATTERNS = [
@@ -269,8 +301,13 @@ def build_dependency_graph(
                 context_files.add(resolved)
 
                 # Second-level: also get imports OF the imported file (depth=2)
+                # Cap total context nodes to prevent graph explosion
+                if len(context_files) >= MAX_CONTEXT_NODES:
+                    break
                 second_imports = extract_imports_from_file(repo_dir, resolved, commit_hash)
-                for imp2 in second_imports[:10]:  # Limit to avoid explosion
+                for imp2 in second_imports:
+                    if len(context_files) >= MAX_CONTEXT_NODES:
+                        break
                     resolved2 = resolve_import_to_file(imp2, resolved, all_repo_files)
                     if resolved2 and resolved2 != resolved and resolved2 != src_file:
                         edge2 = f"{resolved} -> {resolved2} (import)"
@@ -282,10 +319,16 @@ def build_dependency_graph(
 
 
 def estimate_tokens_from_files(
-    repo_dir: str, file_paths: list[str], commit_hash: str
+    repo_dir: str, file_paths: list[str], commit_hash: str,
+    language: str = "Unknown",
 ) -> int:
-    """Estimate total tokens by reading actual file sizes at the commit."""
-    total_bytes = 0
+    """
+    Estimate total tokens using language-aware character-per-token ratios.
+
+    Code is denser than prose: Python ~3.2 chars/token, Go ~3.5, Java ~2.8.
+    Falls back to 3.5 chars/token (conservative) for unknown languages.
+    """
+    total_chars = 0
     for fpath in file_paths:
         cmd = ["git", "show", f"{commit_hash}^:{fpath}"]
         result = subprocess.run(
@@ -293,10 +336,10 @@ def estimate_tokens_from_files(
             encoding="utf-8", errors="replace"
         )
         if result.returncode == 0 and result.stdout:
-            total_bytes += len(result.stdout)
+            total_chars += len(result.stdout)
 
-    # Rough estimate: 1 token ≈ 4 characters
-    return total_bytes // 4
+    ratio = TOKEN_RATIO.get(language, TOKEN_RATIO["default"])
+    return int(total_chars / ratio)
 
 
 def compute_lcvs(task: CommitTask) -> float:
@@ -449,6 +492,13 @@ def analyze_and_filter(tasks: list[CommitTask]) -> list[CommitTask]:
             task.rejection_reason = "commit message not interesting"
             continue
 
+        # Post-training cutoff filter
+        if task.date:
+            date_str = task.date[:10]  # YYYY-MM-DD
+            if date_str < POST_TRAINING_CUTOFF:
+                task.rejection_reason = f"before cutoff ({date_str} < {POST_TRAINING_CUTOFF})"
+                continue
+
         # Compute scores
         task.lcvs_score = compute_lcvs(task)
 
@@ -457,6 +507,17 @@ def analyze_and_filter(tasks: list[CommitTask]) -> list[CommitTask]:
             continue
 
         accepted.append(task)
+
+    # Log rejection summary
+    rejected = [t for t in tasks if t.rejection_reason]
+    if rejected:
+        reason_counts: dict[str, int] = {}
+        for t in rejected:
+            key = t.rejection_reason.split("(")[0].strip()
+            reason_counts[key] = reason_counts.get(key, 0) + 1
+        print(f"   Rejection breakdown:")
+        for reason, count in sorted(reason_counts.items(), key=lambda x: -x[1]):
+            print(f"     {count:3d} × {reason}")
 
     return accepted
 
@@ -488,10 +549,14 @@ def format_task_schema(
         repo_dir, task.commit_hash, changed_paths
     )
 
-    # Estimate tokens from actual file sizes
-    print(f"   📏 Estimating context size ({len(context_files)} files)...")
+    # Detect language first for token estimation
+    detected_lang_early = detect_language(changed_paths)
+
+    # Estimate tokens from actual file sizes (language-aware)
+    print(f"   📏 Estimating context size ({len(context_files)} files, lang={detected_lang_early})...")
     token_estimate = estimate_tokens_from_files(
-        repo_dir, context_files[:50], task.commit_hash  # Cap at 50 files
+        repo_dir, context_files[:50], task.commit_hash,
+        language=detected_lang_early,
     )
 
     # Compute context ratio (required_context / modified_files)
@@ -545,12 +610,16 @@ def format_task_schema(
         "requires_test_awareness": task.test_files > 0,
     }
 
+    # Detect language from modified files
+    all_task_files = changed_paths + [f.path for f in test_files]
+    detected_lang = detect_language(all_task_files)
+
     return {
         "task_id": f"{repo_url.split('/')[-1]}-{task.commit_hash[:8]}",
         "repository_metadata": {
             "repo_url": repo_url,
             "base_commit": f"{task.commit_hash}^",
-            "language": "auto-detected",
+            "language": detected_lang,
             "commit_date": task.date,
         },
         "task_description": {
