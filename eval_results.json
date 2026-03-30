@@ -1,0 +1,81 @@
+{
+  "metadata": {
+    "pipeline": "long-context-eval",
+    "version": "1.0.0",
+    "timestamp": "2026-03-30T16:17:23.946431",
+    "tasks_evaluated": 2
+  },
+  "results": [
+    {
+      "task_id": "react-3cb2c420",
+      "timestamp": "2026-03-30T16:17:20.786347",
+      "repo": "https://github.com/facebook/react",
+      "base_commit": "3cb2c420^",
+      "steps": {
+        "clone": {
+          "status": "ok",
+          "path": "C:\\Users\\sharm\\AppData\\Local\\Temp\\long-context-eval\\react"
+        },
+        "checkout": {
+          "status": "ok"
+        },
+        "test_before_fix": {
+          "exit_code": 1,
+          "passed": false,
+          "stdout": "",
+          "stderr": "node:internal/modules/cjs/loader:1228\n  throw err;\n  ^\n\nError: Cannot find module '@babel/register'\nRequire stack:\n- C:\\Users\\sharm\\AppData\\Local\\Temp\\long-context-eval\\react\\scripts\\flags\\flags.js\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1225:15)\n    at Module._load (node:internal/modules/cjs/loader:1051:27)\n    at Module.require (node:internal/modules/cjs/loader:1311:19)\n    at require (node:internal/modules/helpers:179:18)\n    at Object.<anonymous> (C:\\Users\\sharm\\AppData\\Local\\Temp\\long-context-eval\\react\\scripts\\flags\\flags.js:9:15)\n    at Module._compile (node:internal/modules/cjs/loader:1469:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)\n    at Module.load (node:internal/modules/cjs/loader:1288:32)\n    at Module._load (node:internal/modules/cjs/loader:1104:12)\n    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:174:12) {\n  code: 'MODULE_NOT_FOUND',\n  requireStack: [\n    'C:\\\\Users\\\\sharm\\\\AppData\\\\Local\\\\Temp\\\\long-context-eval\\\\react\\\\scripts\\\\flags\\\\flags.js'\n  ]\n}\n\nNode.js v20.18.0\n",
+          "note": "No gold patch — would send to AI agent"
+        }
+      },
+      "overall": "NO_PATCH_PROVIDED",
+      "context": {
+        "files_in_task": [
+          "packages/eslint-plugin-react-hooks/src/shared/RunReactCompiler.ts",
+          "packages/shared/ReactFeatureFlags.js",
+          "packages/shared/forks/ReactFeatureFlags.www.js",
+          "packages/shared/forks/ReactFeatureFlags.native-fb.js",
+          "packages/shared/forks/ReactFeatureFlags.native-oss.js",
+          "scripts/flags/flags.js",
+          "scripts/rollup/build.js",
+          "scripts/rollup/bundles.js",
+          "scripts/rollup/validate/index.js"
+        ],
+        "task_description": "Add ReactFeatureFlags support to the eslint-plugin-react-hooks package. The compiler options in RunReactCompiler.ts are currently hardcoded. They should be controlled via ReactFeatureFlags so they can be configured per-environment (www vs oss vs native).",
+        "category": "feature_implementation"
+      }
+    },
+    {
+      "task_id": "react-4cf90638",
+      "timestamp": "2026-03-30T16:17:22.543813",
+      "repo": "https://github.com/facebook/react",
+      "base_commit": "4cf90638^",
+      "steps": {
+        "clone": {
+          "status": "ok",
+          "path": "C:\\Users\\sharm\\AppData\\Local\\Temp\\long-context-eval\\react"
+        },
+        "checkout": {
+          "status": "ok"
+        },
+        "test_before_fix": {
+          "exit_code": 0,
+          "passed": true,
+          "stdout": "C:\\Users\\sharm\\AppData\\Local\\Temp\\long-context-eval\\react\\packages\\react-reconciler\\src\\ReactFiberGestureScheduler.js:10\nimport type {FiberRoot} from './ReactInternalTypes';\n^^^^^^\n\nSyntaxError: Cannot use import statement outside a module\n    at wrapSafe (node:internal/modules/cjs/loader:1378:20)\n    at Module._compile (node:internal/modules/cjs/loader:1428:41)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)\n    at Module.load (node:internal/modules/cjs/loader:1288:32)\n    at Module._load (node:internal/modules/cjs/loader:1104:12)\n    at Module.require (node:internal/modules/cjs/loader:1311:19)\n    at require (node:internal/modules/helpers:179:18)\n    at [eval]:1:1\n    at runScriptInThisContext (node:internal/vm:209:10)\n    at node:internal/process/execution:118:14\n\nNode.js v20.18.0\nVALIDATION_CHECK\n",
+          "stderr": "",
+          "note": "No gold patch — would send to AI agent"
+        }
+      },
+      "overall": "NO_PATCH_PROVIDED",
+      "context": {
+        "files_in_task": [
+          "fixtures/view-transition/src/components/SwipeRecognizer.js",
+          "packages/react-reconciler/src/ReactFiberGestureScheduler.js",
+          "packages/react-reconciler/src/ReactFiberPerformanceTrack.js",
+          "packages/react-reconciler/src/ReactFiberWorkLoop.js"
+        ],
+        "task_description": "Optimize gesture transitions by allowing the original work-in-progress tree to be used as a suspended commit. This avoids re-rendering when the gesture completes and the commit is already prepared.",
+        "category": "architectural_understanding"
+      }
+    }
+  ]
+}

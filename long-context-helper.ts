@@ -157,7 +157,6 @@ function classifyFailure(
   testsPassed: boolean,
 ): FailureMode {
   const expectedSet = new Set(expectedFiles);
-  const actualSet = new Set(actualFiles);
 
   // Check if agent touched completely wrong files
   const overlap = actualFiles.filter((f) => expectedSet.has(f));

@@ -1,0 +1,402 @@
+{
+  "metadata": {
+    "pipeline": "long-context-eval-repo-mining",
+    "version": "1.0.0",
+    "generated_at": "2026-03-30T16:16:26.176744",
+    "mode": "curated-offline",
+    "criteria": {
+      "min_loc": 100000,
+      "diversity": "Multi-language, multi-domain",
+      "requirements": [
+        "Active development (recent commits)",
+        "Comprehensive test suite with CI",
+        "Permissive or copyleft license",
+        "Rich cross-module dependency structure"
+      ]
+    },
+    "scoring_formula": "0.25*community + 0.20*lang_diversity + 0.20*test_infra + 0.20*activity + 0.15*size",
+    "total_candidates": 20
+  },
+  "ranked_repos": [
+    {
+      "rank": 1,
+      "name": "kubernetes/kubernetes",
+      "url": "https://github.com/kubernetes/kubernetes",
+      "primary_language": "Go",
+      "stars": 123000,
+      "forks": 41000,
+      "estimated_loc": 3200000,
+      "size_kb": 32000000,
+      "language_count": 5,
+      "languages": {
+        "Go": 3200000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "Container orchestration with complex scheduler and API server",
+      "score": 0.9894,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 2,
+      "name": "tensorflow/tensorflow",
+      "url": "https://github.com/tensorflow/tensorflow",
+      "primary_language": "Python",
+      "stars": 255000,
+      "forks": 85000,
+      "estimated_loc": 3000000,
+      "size_kb": 30000000,
+      "language_count": 5,
+      "languages": {
+        "Python": 3000000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "ML framework with computation graphs and serving",
+      "score": 0.9888,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 3,
+      "name": "pytorch/pytorch",
+      "url": "https://github.com/pytorch/pytorch",
+      "primary_language": "Python",
+      "stars": 72000,
+      "forks": 24000,
+      "estimated_loc": 2500000,
+      "size_kb": 25000000,
+      "language_count": 5,
+      "languages": {
+        "Python": 2500000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "ML framework with autograd, distributed training, CUDA",
+      "score": 0.9814,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 4,
+      "name": "nodejs/node",
+      "url": "https://github.com/nodejs/node",
+      "primary_language": "JavaScript",
+      "stars": 78000,
+      "forks": 26000,
+      "estimated_loc": 2000000,
+      "size_kb": 20000000,
+      "language_count": 5,
+      "languages": {
+        "JavaScript": 2000000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "JS runtime with streams, crypto, async I/O",
+      "score": 0.9807,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 5,
+      "name": "flutter/flutter",
+      "url": "https://github.com/flutter/flutter",
+      "primary_language": "Dart",
+      "stars": 81000,
+      "forks": 27000,
+      "estimated_loc": 1000000,
+      "size_kb": 10000000,
+      "language_count": 5,
+      "languages": {
+        "Dart": 1000000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "Cross-platform UI toolkit",
+      "score": 0.9749,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 6,
+      "name": "apache/spark",
+      "url": "https://github.com/apache/spark",
+      "primary_language": "Scala",
+      "stars": 57000,
+      "forks": 19000,
+      "estimated_loc": 1500000,
+      "size_kb": 15000000,
+      "language_count": 5,
+      "languages": {
+        "Scala": 1500000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "Distributed computing with SQL, streaming, ML",
+      "score": 0.9601,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 7,
+      "name": "golang/go",
+      "url": "https://github.com/golang/go",
+      "primary_language": "Go",
+      "stars": 54000,
+      "forks": 18000,
+      "estimated_loc": 1800000,
+      "size_kb": 18000000,
+      "language_count": 5,
+      "languages": {
+        "Go": 1800000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "Language compiler and standard library",
+      "score": 0.9483,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 8,
+      "name": "vercel/next.js",
+      "url": "https://github.com/vercel/next.js",
+      "primary_language": "TypeScript",
+      "stars": 84000,
+      "forks": 28000,
+      "estimated_loc": 800000,
+      "size_kb": 8000000,
+      "language_count": 4,
+      "languages": {
+        "TypeScript": 800000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "React framework with SSR, routing, complex build pipeline",
+      "score": 0.9335,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 9,
+      "name": "apache/kafka",
+      "url": "https://github.com/apache/kafka",
+      "primary_language": "Java",
+      "stars": 43500,
+      "forks": 14500,
+      "estimated_loc": 1000000,
+      "size_kb": 10000000,
+      "language_count": 5,
+      "languages": {
+        "Java": 1000000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "Distributed message queue with replication and partitioning",
+      "score": 0.8954,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 10,
+      "name": "elastic/elasticsearch",
+      "url": "https://github.com/elastic/elasticsearch",
+      "primary_language": "Java",
+      "stars": 42000,
+      "forks": 14000,
+      "estimated_loc": 2000000,
+      "size_kb": 20000000,
+      "language_count": 5,
+      "languages": {
+        "Java": 2000000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "Search engine with indexing, sharding, aggregation",
+      "score": 0.895,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 11,
+      "name": "angular/angular",
+      "url": "https://github.com/angular/angular",
+      "primary_language": "TypeScript",
+      "stars": 75000,
+      "forks": 25000,
+      "estimated_loc": 600000,
+      "size_kb": 6000000,
+      "language_count": 3,
+      "languages": {
+        "TypeScript": 600000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "Frontend framework with dependency injection, change detection",
+      "score": 0.8888,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 12,
+      "name": "microsoft/TypeScript",
+      "url": "https://github.com/microsoft/TypeScript",
+      "primary_language": "TypeScript",
+      "stars": 37500,
+      "forks": 12500,
+      "estimated_loc": 1100000,
+      "size_kb": 11000000,
+      "language_count": 5,
+      "languages": {
+        "TypeScript": 1100000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "Type system compiler with deep inference and type-checking",
+      "score": 0.8687,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 13,
+      "name": "rust-lang/rust",
+      "url": "https://github.com/rust-lang/rust",
+      "primary_language": "Rust",
+      "stars": 36000,
+      "forks": 12000,
+      "estimated_loc": 2200000,
+      "size_kb": 22000000,
+      "language_count": 5,
+      "languages": {
+        "Rust": 2200000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "Systems language compiler with borrow checker",
+      "score": 0.8682,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 14,
+      "name": "django/django",
+      "url": "https://github.com/django/django",
+      "primary_language": "Python",
+      "stars": 96000,
+      "forks": 32000,
+      "estimated_loc": 500000,
+      "size_kb": 5000000,
+      "language_count": 2,
+      "languages": {
+        "Python": 500000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "Web framework with ORM, middleware, authentication",
+      "score": 0.8514,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 15,
+      "name": "facebook/react",
+      "url": "https://github.com/facebook/react",
+      "primary_language": "JavaScript",
+      "stars": 135000,
+      "forks": 45000,
+      "estimated_loc": 350000,
+      "size_kb": 3500000,
+      "language_count": 2,
+      "languages": {
+        "JavaScript": 350000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "UI library with reconciler, fiber architecture, hooks",
+      "score": 0.8488,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 16,
+      "name": "grafana/grafana",
+      "url": "https://github.com/grafana/grafana",
+      "primary_language": "Go",
+      "stars": 33000,
+      "forks": 11000,
+      "estimated_loc": 1200000,
+      "size_kb": 12000000,
+      "language_count": 5,
+      "languages": {
+        "Go": 1200000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "Observability platform with plugins and dashboards",
+      "score": 0.8485,
+      "suitability": "excellent"
+    },
+    {
+      "rank": 17,
+      "name": "nestjs/nest",
+      "url": "https://github.com/nestjs/nest",
+      "primary_language": "TypeScript",
+      "stars": 25500,
+      "forks": 8500,
+      "estimated_loc": 150000,
+      "size_kb": 1500000,
+      "language_count": 2,
+      "languages": {
+        "TypeScript": 150000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "Node.js framework with decorators and dependency injection",
+      "score": 0.6734,
+      "suitability": "good"
+    },
+    {
+      "rank": 18,
+      "name": "vitejs/vite",
+      "url": "https://github.com/vitejs/vite",
+      "primary_language": "TypeScript",
+      "stars": 24000,
+      "forks": 8000,
+      "estimated_loc": 200000,
+      "size_kb": 2000000,
+      "language_count": 2,
+      "languages": {
+        "TypeScript": 200000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "Build tool with HMR and plugin system",
+      "score": 0.6688,
+      "suitability": "good"
+    },
+    {
+      "rank": 19,
+      "name": "prisma/prisma",
+      "url": "https://github.com/prisma/prisma",
+      "primary_language": "TypeScript",
+      "stars": 16500,
+      "forks": 5500,
+      "estimated_loc": 300000,
+      "size_kb": 3000000,
+      "language_count": 2,
+      "languages": {
+        "TypeScript": 300000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "ORM with schema-driven development and migrations",
+      "score": 0.6348,
+      "suitability": "good"
+    },
+    {
+      "rank": 20,
+      "name": "sveltejs/svelte",
+      "url": "https://github.com/sveltejs/svelte",
+      "primary_language": "JavaScript",
+      "stars": 12000,
+      "forks": 4000,
+      "estimated_loc": 120000,
+      "size_kb": 1200000,
+      "language_count": 2,
+      "languages": {
+        "JavaScript": 120000
+      },
+      "has_ci": true,
+      "license": "Unknown",
+      "description": "Compiler-based UI framework",
+      "score": 0.602,
+      "suitability": "good"
+    }
+  ]
+}
